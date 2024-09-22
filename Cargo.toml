@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+derive_more = {version = "1.0.0", features = ["full"]}
 hex = "0.4.3"
 hex-literal = "0.4.1"
 keccak-asm = "0.1.4"
+ruint = "1.12.3"
