@@ -2,6 +2,7 @@ use crate::aliases;
 use core::{fmt, iter, ops, str};
 use derive_more::{Deref, DerefMut, From, Index, IndexMut, IntoIterator};
 use hex::FromHex;
+use const_hex::Buffer;
 
 #[derive(
     Clone,
@@ -68,14 +69,27 @@ impl<const N: usize> fmt::Debug for FixedBytes<N> {
 
 impl<const N: usize> fmt::Display for FixedBytes<N> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // If the alternate flag is NOT set, we write the full hex.
         if N <= 4 || !f.alternate() {
-            write!(f, "0x{}", hex::encode(self.0))
-        } else {
-            write!(f, "0x{}…{}", hex::encode(&self.0[..2]), hex::encode(&self.0[N - 2..]))
+            return self.fmt_hex::<false>(f, true);
         }
+
+        // If the alternate flag is set, we use middle-out compression.
+        const SEP_LEN: usize = '…'.len_utf8();
+        let mut buf = [0; 2 + 4 + SEP_LEN + 4];
+        buf[0] = b'0';
+        buf[1] = b'x';
+        hex::encode_to_slice(&self.0[0..2], &mut buf[2..6]).unwrap();
+        '…'.encode_utf8(&mut buf[6..]);
+        hex::encode_to_slice(&self.0[N - 2..N], &mut buf[6 + SEP_LEN..]).unwrap();
+
+        // SAFETY: always valid UTF-8
+        f.write_str(unsafe { str::from_utf8_unchecked(&buf) })
     }
 }
 
+
+//uselsssssssssss
 impl<const N: usize> fmt::LowerHex for FixedBytes<N> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if f.alternate() {
@@ -88,6 +102,7 @@ impl<const N: usize> fmt::LowerHex for FixedBytes<N> {
     }
 }
 
+//uselessssssss
 impl<const N: usize> fmt::UpperHex for FixedBytes<N> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if f.alternate() {
@@ -203,6 +218,13 @@ impl<const N: usize> FixedBytes<N> {
     #[inline(always)]
     pub const fn len_bytes() -> usize {
         N
+    }
+
+    fn fmt_hex<const UPPER: bool>(&self, f: &mut fmt::Formatter<'_>, prefix: bool) -> fmt::Result {
+        let mut buf = Buffer::<N, true>::new();
+        let s = if UPPER { buf.format_upper(self) } else { buf.format(self) };
+        // SAFETY: The buffer is guaranteed to be at least 2 bytes in length.
+        f.write_str(unsafe { s.get_unchecked((!prefix as usize) * 2..) })
     }
 
     #[inline]
