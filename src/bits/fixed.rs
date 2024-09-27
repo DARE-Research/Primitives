@@ -1,6 +1,6 @@
 use crate::aliases;
 use core::{fmt, iter, ops, str};
-use derive_more::{Deref, DerefMut, From, Index, IndexMut, IntoIterator};
+use derive_more::{derive::Display, Deref, DerefMut, From, Index, IndexMut, IntoIterator};
 use hex::FromHex;
 use const_hex::Buffer;
 
@@ -347,15 +347,15 @@ mod tests {
 
 
     macro_rules! fixed_bytes {
-        ($hex:literal) => {
-            FixedBytes::from_slice($hex)
+        ($hex:literal, $N:expr) => {
+            FixedBytes::<$N>::from_slice(&hex::decode($hex).unwrap())
         };
     }
 
     macro_rules! test_fmt {
-        ($($fmt:literal, $hex:literal => $expected:literal;)+) => {$(
+        ($($fmt:literal, $hex:literal, $N:expr => $expected:literal;)+) => {$(
             assert_eq!(
-                format!($fmt, fixed_bytes!($hex)),
+                format!($fmt, fixed_bytes!($hex, $N)),
                 $expected
             );
         )+};
@@ -372,7 +372,6 @@ mod tests {
         assert_eq!(ACTUAL, EXPECTED);
         println!("{:?}", time.elapsed());
     }
-
 
     #[test]
     #[should_panic(expected = "slice is too large")]

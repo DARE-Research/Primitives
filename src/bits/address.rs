@@ -1,6 +1,7 @@
-use core::{fmt, mem::MaybeUninit,str, str::FromStr};
-use keccak_asm::{Digest, Keccak256};
+use core::arch::aarch64::*;
+use core::{fmt, mem::MaybeUninit, str, str::FromStr};
 use hex::{self, FromHex};
+use keccak_asm::{Digest, Keccak256};
 
 #[derive(Clone)]
 pub struct AddressChecksumBuffer(MaybeUninit<[u8; 42]>);
@@ -56,14 +57,12 @@ impl fmt::Display for AddressChecksumBuffer {
     }
 }
 
-
 #[derive(Debug)]
 pub enum AddressError {
     Hex(hex::FromHexError),
     InvalidLength,
     InvalidChecksum,
 }
-
 
 #[repr(align(8))]
 #[derive(PartialEq, Debug)]
@@ -77,12 +76,12 @@ impl FromStr for Address {
         if s.len() != 40 {
             return Err(AddressError::InvalidLength);
         }
-        
+
         let bytes = Vec::from_hex(s).map_err(AddressError::Hex)?;
         if bytes.len() != 20 {
             return Err(AddressError::InvalidLength);
         }
-        
+
         Ok(Address(bytes.try_into().unwrap()))
     }
 }
@@ -94,11 +93,11 @@ impl From<hex::FromHexError> for AddressError {
 }
 
 impl Address {
-    
     pub fn parse_checksummed(s: &str, chain_id: Option<u64>) -> Result<Self, AddressError> {
         let address = Self::from_str(s)?;
-        
+
         let calculated_checksum = address.to_checksum(chain_id);
+    
         if s.eq_ignore_ascii_case(&calculated_checksum) {
             Ok(address)
         } else {
@@ -113,8 +112,17 @@ impl Address {
     #[inline(always)]
     pub fn to_checksum_buffer(&self, chain_id: Option<u64>) -> AddressChecksumBuffer {
         let mut buf = unsafe { AddressChecksumBuffer::new() };
-        self.to_checksum_inner(unsafe { buf.0.assume_init_mut() }, chain_id);
-        // buf.format(self, chain_id);
+        #[cfg(target_arch = "aarch64")]
+        {
+            use std::arch::is_aarch64_feature_detected;
+            if is_aarch64_feature_detected!("neon") {
+                unsafe {
+                  self.to_checksum_inner_simd( buf.0.assume_init_mut(), chain_id);
+                }
+                return buf;
+            }
+        }
+        self.to_checksum_inner(unsafe{ buf.0.assume_init_mut() }, chain_id);
         buf
     }
 
@@ -148,8 +156,62 @@ impl Address {
             }
         }
     }
-}
 
+    #[cfg(target_arch = "aarch64")]
+    #[target_feature(enable = "neon")]
+    unsafe fn to_checksum_inner_simd(&self, buf: &mut [u8; 42], chain_id: Option<u64>) {
+        debug_assert_eq!(self.0.len(), 20, "Input must be exactly 20 bytes");
+        buf[0] = b'0';
+        buf[1] = b'x';
+
+        // Convert bytes to lowercase hex characters
+        for (i, &byte) in self.0.iter().enumerate() {
+            buf[2 + i * 2] = HEX_CHARS[(byte >> 4) as usize];
+            buf[2 + i * 2 + 1] = HEX_CHARS[(byte & 0xf) as usize];
+        }
+
+        // Keccak256 hash calculation
+        let mut hasher = Keccak256::new();
+        if let Some(id) = chain_id {
+            for ch in id.to_string().bytes() {
+                hasher.update(&[ch]);
+            }
+            hasher.update(b"0x");
+        }
+        hasher.update(&buf[2..]);
+        let hash = hasher.finalize();
+
+        // Apply checksum using SIMD
+        let nine_ascii = vdupq_n_u8(b'9');
+        let case_mask = vdupq_n_u8(0x20);
+        for i in (0..40).step_by(16) {
+            let chars = vld1q_u8(buf[2 + i..].as_ptr());
+            let hash_bytes = vld1q_u8(hash[i / 2..].as_ptr());
+            let hash_bits = vorrq_u8(
+                vshlq_n_u8(vandq_u8(hash_bytes, vdupq_n_u8(0xf0)), 1),
+                vshrq_n_u8(vandq_u8(hash_bytes, vdupq_n_u8(0x0f)), 3),
+            );
+            let is_alpha = vcgtq_u8(chars, nine_ascii);
+            let should_be_uppercase = vcgeq_u8(hash_bits, vdupq_n_u8(8));
+            let change_case = vandq_u8(is_alpha, should_be_uppercase);
+            let result = veorq_u8(chars, vandq_u8(change_case, case_mask));
+            vst1q_u8(buf[2 + i..].as_mut_ptr(), result);
+        }
+
+        for i in 0..40 {
+            let char = buf[i + 2];
+            if char > b'9' {
+                let hash_byte = hash[i / 2];
+                let hash_bit = (hash_byte >> (if i % 2 == 0 { 4 } else { 0 })) & 0x0f;
+                if hash_bit >= 8 {
+                    buf[i + 2] = char.to_ascii_uppercase();
+                } else {
+                    buf[i + 2] = char.to_ascii_lowercase();
+                }
+            }
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -161,7 +223,10 @@ mod tests {
     fn parse() {
         let expected = hex!("0102030405060708090a0b0c0d0e0f1011121314");
         assert_eq!(
-            ("0102030405060708090a0b0c0d0e0f1011121314".parse::<Address>().unwrap().0),
+            ("0102030405060708090a0b0c0d0e0f1011121314"
+                .parse::<Address>()
+                .unwrap()
+                .0),
             expected
         );
     }
@@ -248,9 +313,8 @@ mod tests {
             for addr in addresses {
                 let parsed1: Address = addr.parse().unwrap();
                 println!("{:?}", addr);
-                println!("{:?}", id);
                 let parsed2 = Address::parse_checksummed(addr, id).unwrap();
-               
+
                 assert_eq!(parsed1, parsed2);
                 assert_eq!(parsed2.to_checksum(id), addr);
             }
@@ -258,5 +322,4 @@ mod tests {
         let stop = start.elapsed();
         println!("{:?}", stop);
     }
-
 }
