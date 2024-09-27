@@ -1,6 +1,3 @@
-//From::
-
-
 //! Type aliases for common bit sizes of [`Uint`] and [`Bits`].
 use ruint::{Bits, Uint};
 
