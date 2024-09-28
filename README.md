@@ -1,13 +1,14 @@
 # Experimentation to Optimize Ethereum Primitives
 
 (honestly idk what I'm doing, but you never know what you are doing until you try anyway, so who cares)
+don't tell anyone but this is just an excuse for me to learn simd stuff(idk what it's)
 
 ## What's This All About?
 
 This project is a wild ride into the world of primitive optimization. We're throwing ideas at the wall and seeing what sticks. Our main weapon of choice? SIMD (Single Instruction, Multiple Data) - because why not make things go zoom?
 
 ## The Grand Plan (or lack thereof)
-
+0. Early suuport for arm neon
 1. Take a look at Ethereum primitives
 2. Scratch our heads and wonder how to make them faster
 3. Remember that SIMD exists and seems cool

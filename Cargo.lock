@@ -567,6 +567,8 @@ dependencies = [
 name = "primitives"
 version = "0.1.0"
 dependencies = [
+ "alloy-rlp",
+ "bytes",
  "const-hex",
  "derive_more",
  "hex",

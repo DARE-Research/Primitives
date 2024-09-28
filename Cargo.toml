@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+alloy-rlp = "0.3.8"
+bytes = "1.7.2"
 const-hex = "1.12.0"
 derive_more = {version = "1.0.0", features = ["full"]}
 hex = "0.4"

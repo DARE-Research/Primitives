@@ -3,3 +3,4 @@
 #![feature(portable_simd)]
 pub mod aliases;
 pub mod bits;
+pub mod bytes;
