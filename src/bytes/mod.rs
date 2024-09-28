@@ -5,6 +5,7 @@ use core::{
 };
 use std::{borrow::Borrow, boxed::Box};
 pub mod rlp;
+pub mod serde;
 
 #[cfg(target_arch = "aarch64")]
 use core::arch::aarch64::*;
@@ -69,7 +70,7 @@ impl Bytes {
 
     #[cfg(target_arch = "x86_64")]
     #[target_feature(enable = "avx2")]
-    unsafe fn to_hex_x86_64(&self, result: &mut String, uppercase: bool) {
+    pub unsafe fn to_hex_x86_64(&self, result: &mut String, uppercase: bool) {
         use core::arch::x86_64::*;
 
         let lut_lower = _mm256_setr_epi8(
@@ -100,7 +101,7 @@ impl Bytes {
 
     #[cfg(target_arch = "aarch64")]
     #[target_feature(enable = "neon")]
-    unsafe fn to_hex_aarch64(&self, result: &mut String, uppercase: bool) {
+    pub unsafe fn to_hex_aarch64(&self, result: &mut String, uppercase: bool) {
         use core::arch::aarch64::*;
 
         let lut_lower = vld1q_u8(b"0123456789abcdef".as_ptr());

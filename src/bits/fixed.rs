@@ -1,8 +1,7 @@
-use crate::aliases;
-use core::{fmt, iter, ops, str};
-use derive_more::{derive::Display, Deref, DerefMut, From, Index, IndexMut, IntoIterator};
+use core::{fmt, ops, str};
+use derive_more::{ Deref, DerefMut, From, Index, IndexMut, IntoIterator};
 use hex::FromHex;
-use const_hex::Buffer;
+use hex::Buffer;
 
 #[derive(
     Clone,
