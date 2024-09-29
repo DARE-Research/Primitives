@@ -1,14 +1,16 @@
 use core::{
-    alloc, fmt,
+     fmt,
     ops::{Deref, DerefMut},
-    slice, str::FromStr
+     str::FromStr
 };
-use std::{borrow::Borrow, boxed::Box};
+use std:: boxed::Box;
+use rand::Rng;
 pub mod rlp;
 pub mod serde;
 
+
 #[cfg(target_arch = "aarch64")]
-use core::arch::aarch64::*;
+
 #[cfg(target_arch = "x86_64")]
 use core::arch::x86_64::*;
 
@@ -104,37 +106,65 @@ impl Bytes {
     pub unsafe fn to_hex_aarch64(&self, result: &mut String, uppercase: bool) {
         use core::arch::aarch64::*;
 
+        let additional_capacity = self.inner.len() * 2;
+        result.reserve(additional_capacity);
+  
         let lut_lower = vld1q_u8(b"0123456789abcdef".as_ptr());
         let lut_upper = vld1q_u8(b"0123456789ABCDEF".as_ptr());
         let lut = if uppercase { lut_upper } else { lut_lower };
         let mask_low = vdupq_n_u8(0x0f);
-        let mut temp_buffer = [0u8; 32];
-
-        for chunk in self.inner.chunks(16) {
-            let chunk_len = chunk.len();
-            let input = if chunk_len == 16 {
-                vld1q_u8(chunk.as_ptr())
-            } else {
-                let mut padded = [0u8; 16];
-                padded[..chunk_len].copy_from_slice(chunk);
-                vld1q_u8(padded.as_ptr())
-            };
-
+    
+        let chunks = self.inner.chunks_exact(16);
+        let remainder = chunks.remainder();
+    
+        for chunk in chunks {
+            let input = vld1q_u8(chunk.as_ptr());
+            
             let hi = vshrq_n_u8(input, 4);
             let lo = vandq_u8(input, mask_low);
-
+            
             let hi_hex = vqtbl1q_u8(lut, hi);
             let lo_hex = vqtbl1q_u8(lut, lo);
-
+            
             let res1 = vzip1q_u8(hi_hex, lo_hex);
             let res2 = vzip2q_u8(hi_hex, lo_hex);
+    
+            let bytes = result.as_mut_vec();
+            let start = bytes.len();
+            bytes.set_len(start + 32);
+            
+            vst1q_u8(bytes.as_mut_ptr().add(start), res1);
+            vst1q_u8(bytes.as_mut_ptr().add(start + 16), res2);
+        }
 
+        if !remainder.is_empty() {
+            let mut padded = [0u8; 16];
+            padded[..remainder.len()].copy_from_slice(remainder);
+            let input = vld1q_u8(padded.as_ptr());
+            
+            let hi = vshrq_n_u8(input, 4);
+            let lo = vandq_u8(input, mask_low);
+            
+            let hi_hex = vqtbl1q_u8(lut, hi);
+            let lo_hex = vqtbl1q_u8(lut, lo);
+            
+            let res1 = vzip1q_u8(hi_hex, lo_hex);
+            let res2 = vzip2q_u8(hi_hex, lo_hex);
+    
+            let mut temp_buffer = [0u8; 32];
             vst1q_u8(temp_buffer.as_mut_ptr(), res1);
             vst1q_u8(temp_buffer.as_mut_ptr().add(16), res2);
-
-            let valid_bytes = chunk_len * 2;
+            
+            let valid_bytes = remainder.len() * 2;
             result.push_str(core::str::from_utf8_unchecked(&temp_buffer[..valid_bytes]));
         }
+    }
+
+    pub fn random() -> Self{
+        let mut rng = rand::thread_rng();
+        let mut bytes = [0u8; 20];
+        rng.fill(&mut bytes);
+        Bytes{ inner: bytes.to_vec().into_boxed_slice()}
     }
 
 }
