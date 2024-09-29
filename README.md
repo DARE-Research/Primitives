@@ -1,4 +1,4 @@
-# Experimentation to Optimize Ethereum Primitives
+# Experimentation to Optimize Alloy Primitives
 
 (honestly idk what I'm doing, but you never know what you are doing until you try anyway, so who cares)
 don't tell anyone but this is just an excuse for me to learn simd stuff(idk what it's)
