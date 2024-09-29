@@ -8,7 +8,7 @@ don't tell anyone but this is just an excuse for me to learn simd stuff(idk what
 This project is a wild ride into the world of primitive optimization. We're throwing ideas at the wall and seeing what sticks. Our main weapon of choice? SIMD (Single Instruction, Multiple Data) - because why not make things go zoom?
 
 ## The Grand Plan (or lack thereof)
-0. Early suuport for arm neon
+0. Early support for arm neon
 1. Take a look at Ethereum primitives
 2. Scratch our heads and wonder how to make them faster
 3. Remember that SIMD exists and seems cool
@@ -27,72 +27,14 @@ This project is a wild ride into the world of primitive optimization. We're thro
 ## Results So Far
 # Benchmark Comparison
 
-|
- Primitive 
-|
- SIMD(Primitives)
-|
- Alloy Primitives
-|
- Performance Change 
-|
-|
------------
-|
------------
-|
-------------
-|
----------------------
-|
-|
- address/checksum 
-|
- 171.87 ns 
-|
- 201.41 ns 
-|
- Faster by ~17% 
-|
-|
- bytes/32 
-|
- 13.818 ns 
-|
- 15.818 ns 
-|
- Faster by ~14% 
-|
-|
- bytes/64 
-|
- 14.614 ns 
-|
- 17.667 ns 
-|
- Faster by ~21% 
-|
-|
- bytes/128 
-|
- 36.106 ns 
-|
- 36.859 ns 
-|
- Slightly faster by ~2% 
-|
-|
- bytes/256 
-|
- 42.191 ns 
-|
- 41.024 ns 
-|
- Slower by ~2.8%
-|
+| Primitive | SIMD(Primitives) | Alloy Primitives | Performance Change |
+|-----------|-----------|--------------|--------------------|
+| address/checksum | 171.87 ns | 201.41 ns | Faster by ~17% |
+| bytes/32 | 13.818 ns | 15.818 ns | Faster by ~14% |
+| bytes/64 | 14.614 ns | 17.667 ns | Faster by ~21% |
+| bytes/128 | 36.106 ns | 36.859 ns | Slightly faster by ~2% |
+| bytes/256 | 42.191 ns | 41.024 ns | Slower by ~2.8% |
 
-
-But hey, that's what experimentation is all about, right?
 
 ## Contribute
 
