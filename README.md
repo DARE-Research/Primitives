@@ -25,8 +25,72 @@ This project is a wild ride into the world of primitive optimization. We're thro
 5. If it's faster, celebrate! If not, pretend you meant to do that
 
 ## Results So Far
+# Benchmark Comparison
 
-¯\\\_(ツ)_/¯
+|
+ Primitive 
+|
+ SIMD(Primitives)
+|
+ Alloy Primitives
+|
+ Performance Change 
+|
+|
+-----------
+|
+-----------
+|
+------------
+|
+---------------------
+|
+|
+ address/checksum 
+|
+ 171.87 ns 
+|
+ 201.41 ns 
+|
+ Faster by ~17% 
+|
+|
+ bytes/32 
+|
+ 13.818 ns 
+|
+ 15.818 ns 
+|
+ Faster by ~14% 
+|
+|
+ bytes/64 
+|
+ 14.614 ns 
+|
+ 17.667 ns 
+|
+ Faster by ~21% 
+|
+|
+ bytes/128 
+|
+ 36.106 ns 
+|
+ 36.859 ns 
+|
+ Slightly faster by ~2% 
+|
+|
+ bytes/256 
+|
+ 42.191 ns 
+|
+ 41.024 ns 
+|
+ Slower by ~2.8%
+|
+
 
 But hey, that's what experimentation is all about, right?
 
