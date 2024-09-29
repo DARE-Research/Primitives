@@ -50,3 +50,5 @@ Probably something open source. We'll figure it out.
 This project is inspired by the Alloy primitives developed by the Paradigm team. We aim to build upon their work to further optimize Ethereum's core functionality.
 
 (They seem to know what they're doing, unlike us)
+
+By the DARE research team, you've never heard of it I know but give it a year... nahhh I mean two years.
