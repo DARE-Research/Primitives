@@ -2,6 +2,8 @@ use core::arch::aarch64::*;
 use core::{fmt, mem::MaybeUninit, str, str::FromStr};
 use hex::{self, FromHex};
 use keccak_asm::{Digest, Keccak256};
+use rand::Rng;
+
 
 #[derive(Clone)]
 pub struct AddressChecksumBuffer(MaybeUninit<[u8; 42]>);
@@ -127,7 +129,7 @@ impl Address {
     }
 
     #[inline(always)]
-    fn to_checksum_inner(&self, buf: &mut [u8; 42], chain_id: Option<u64>) {
+    pub fn to_checksum_inner(&self, buf: &mut [u8; 42], chain_id: Option<u64>) {
         buf[0] = b'0';
         buf[1] = b'x';
 
@@ -159,7 +161,7 @@ impl Address {
 
     #[cfg(target_arch = "aarch64")]
     #[target_feature(enable = "neon")]
-    unsafe fn to_checksum_inner_simd(&self, buf: &mut [u8; 42], chain_id: Option<u64>) {
+    pub unsafe fn to_checksum_inner_simd(&self, buf: &mut [u8; 42], chain_id: Option<u64>) {
         debug_assert_eq!(self.0.len(), 20, "Input must be exactly 20 bytes");
         buf[0] = b'0';
         buf[1] = b'x';
@@ -210,6 +212,13 @@ impl Address {
                 }
             }
         }
+    }
+
+    pub fn random() -> Self{
+        let mut rng = rand::thread_rng();
+        let mut bytes = [0u8; 20];
+        rng.fill(&mut bytes);
+        Address(bytes)
     }
 }
 
