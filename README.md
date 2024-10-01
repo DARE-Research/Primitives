@@ -9,11 +9,12 @@ This project is a wild ride into the world of primitive optimization. We're thro
 
 ## The Grand Plan (or lack thereof)
 0. Early support for arm neon
-1. Take a look at Ethereum primitives
+1. Take a look at Alloy primitives
 2. Scratch our heads and wonder how to make them faster
 3. Remember that SIMD exists and seems cool
 4. Try to apply SIMD to... something. Anything, really.
 5. See what happens and hope for the best
+6. Implement Vector operations
 
 
 ## How to Join This Chaos
