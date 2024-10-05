@@ -62,7 +62,6 @@ alias! {
     U4096 B4096 (4096, 64);
 }
 
-// TODO: I0, I1, I8, ... I4096
 
 #[cfg(test)]
 pub mod tests {

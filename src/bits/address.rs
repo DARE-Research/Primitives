@@ -67,7 +67,7 @@ pub enum AddressError {
 }
 
 #[repr(align(8))]
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone, Copy)]
 pub struct Address([u8; 20]);
 
 impl FromStr for Address {
