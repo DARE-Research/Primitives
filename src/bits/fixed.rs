@@ -1,7 +1,7 @@
+use const_hex::Buffer;
 use core::arch::aarch64::*;
 use core::{fmt, ops, str};
 use derive_more::{Deref, DerefMut, From, Index, IndexMut, IntoIterator};
-use hex::Buffer;
 use hex::FromHex;
 
 #[derive(
@@ -53,7 +53,7 @@ impl<const N: usize> FromHex for FixedBytes<N> {
     type Error = hex::FromHexError;
 
     fn from_hex<T: AsRef<[u8]>>(hex: T) -> Result<Self, Self::Error> {
-        let bytes = hex::decode(hex)?; 
+        let bytes = hex::decode(hex)?;
         if bytes.len() != N {
             return Err(hex::FromHexError::InvalidStringLength);
         }
@@ -85,6 +85,13 @@ impl<const N: usize> fmt::Display for FixedBytes<N> {
 
         // SAFETY: always valid UTF-8
         f.write_str(unsafe { str::from_utf8_unchecked(&buf) })
+    }
+}
+
+impl<const N: usize> AsRef<[u8]> for FixedBytes<N> {
+    #[inline]
+    fn as_ref(&self) -> &[u8] {
+        &self.0
     }
 }
 

@@ -37,6 +37,26 @@ This project is a wild ride into the world of primitive optimization. We're thro
 | bytes/256 | 42.191 ns | 41.024 ns | Slower by ~2.8% |
 
 
+
+## SIMD  Results for Parity Inversion
+
+We've recently added SIMD optimizations for Parity inversion. Here are the benchmark results:
+
+| Input Size | Regular Version | SIMD Version | Performance Change |
+|------------|-----------------|--------------|---------------------|
+| 10         | 21.235 ns       | 28.258 ns    | Slower by ~33%      |
+| 100        | 101.93 ns       | 87.783 ns    | Faster by ~14%      |
+| 1000       | 974.07 ns       | 722.84 ns    | Faster by ~25%      |
+| 10000      | 10.090 μs       | 8.1039 μs    | Faster by ~20%      |
+
+
+Key observations:
+- SIMD shows overhead for very small inputs(stick with the non simd version)
+- Performance gains become significant for larger inputs (1000+)
+- Consistent ~20-25% improvement for large inputs
+
+
+
 ## Contribute
 
 Got ideas? Throw them in! 
