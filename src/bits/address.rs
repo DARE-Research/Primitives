@@ -134,7 +134,7 @@ impl Address {
         buf[1] = b'x';
 
         for (i, byte) in self.0.iter().enumerate() {
-            buf[2 + i * 2] = HEX_CHARS[(byte >> 4) as usize];
+            buf[2 + (i << 1)] = HEX_CHARS[(byte >> 4) as usize];
             buf[2 + i * 2 + 1] = HEX_CHARS[(byte & 0xf) as usize];
         }
 
@@ -151,8 +151,8 @@ impl Address {
         let hash = hasher.finalize();
 
         for (i, ch) in buf[2..].iter_mut().enumerate() {
-            let hash_byte = hash[i / 2];
-            let hash_bit = (hash_byte >> (4 * (1 - i % 2))) & 0xf;
+            let hash_byte = hash[i >> 1];
+            let hash_bit = (hash_byte >> (4 * (1 - (i % 2)))) & 0xf;
             if *ch > b'9' && hash_bit >= 8 {
                 *ch = ch.to_ascii_uppercase();
             }
@@ -162,7 +162,7 @@ impl Address {
     #[cfg(target_arch = "aarch64")]
     #[target_feature(enable = "neon")]
     pub unsafe fn to_checksum_inner_simd(&self, buf: &mut [u8; 42], chain_id: Option<u64>) {
-        debug_assert_eq!(self.0.len(), 20, "Input must be exactly 20 bytes");
+        assert_eq!(self.0.len(), 20, "Input must be exactly 20 bytes");
         buf[0] = b'0';
         buf[1] = b'x';
 
@@ -203,8 +203,8 @@ impl Address {
         for i in 0..40 {
             let char = buf[i + 2];
             if char > b'9' {
-                let hash_byte = hash[i / 2];
-                let hash_bit = (hash_byte >> (if i % 2 == 0 { 4 } else { 0 })) & 0x0f;
+                let hash_byte = hash[i >> 1];
+                let hash_bit = (hash_byte >> (if i & 1 == 0 { 4 } else { 0 })) & 0x0f;
                 if hash_bit >= 8 {
                     buf[i + 2] = char.to_ascii_uppercase();
                 } else {

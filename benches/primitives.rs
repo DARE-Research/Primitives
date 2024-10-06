@@ -51,7 +51,7 @@ fn primitives(c: &mut Criterion) {
                 match i % 3 {
                     0 => Parity::Eip155(i as u64),
                     1 => Parity::NonEip155(i & 1 == 0),
-                    _ => Parity::Parity(i % 2 == 0),
+                    _ => Parity::Parity(i & 1 == 0),
                 }
             }).collect();
             
@@ -70,8 +70,8 @@ fn primitives(c: &mut Criterion) {
             let parities: Vec<Parity> = (0..size).map(|i| {
                 match i % 3 {
                     0 => Parity::Eip155(i as u64),
-                    1 => Parity::NonEip155(i % 2 == 0),
-                    _ => Parity::Parity(i % 2 == 0),
+                    1 => Parity::NonEip155(i & 1 == 0),
+                    _ => Parity::Parity(i & 1 == 0),
                 }
             }).collect();
             

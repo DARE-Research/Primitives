@@ -7,6 +7,8 @@ don't tell anyone but this is just an excuse for me to learn simd stuff(idk what
 
 This project is a wild ride into the world of primitive optimization. We're throwing ideas at the wall and seeing what sticks. Our main weapon of choice? SIMD (Single Instruction, Multiple Data) - because why not make things go zoom?
 
+## Design Choice
+
 ## The Grand Plan (or lack thereof)
 0. Early support for arm neon
 1. Take a look at Alloy primitives
@@ -30,7 +32,7 @@ This project is a wild ride into the world of primitive optimization. We're thro
 
 | Primitive | SIMD(Primitives) | Alloy Primitives | Performance Change |
 |-----------|-----------|--------------|--------------------|
-| address/checksum | 171.87 ns | 201.41 ns | Faster by ~17% |
+| address/checksum | 169.43 ns | 201.41 ns | Faster by ~23% |
 | bytes/32 | 13.818 ns | 15.818 ns | Faster by ~14% |
 | bytes/64 | 14.614 ns | 17.667 ns | Faster by ~21% |
 | bytes/128 | 36.106 ns | 36.859 ns | Slightly faster by ~2% |
@@ -42,12 +44,12 @@ This project is a wild ride into the world of primitive optimization. We're thro
 
 We've recently added SIMD optimizations for Parity inversion. Here are the benchmark results:
 
-| Input Size | Regular Version | SIMD Version | Performance Change |
+| Input Size | Alloy Primitives| SIMD Version |  Performance Change |
 |------------|-----------------|--------------|---------------------|
-| 10         | 21.235 ns       | 28.258 ns    | Slower by ~33%      |
-| 100        | 101.93 ns       | 87.783 ns    | Faster by ~14%      |
+| 10         | 21.235 ns       | 23.258 ns    | Slower by ~9.53%    |
+| 100        | 101.93 ns       | 85.767 ns    | Faster by ~15%      |
 | 1000       | 974.07 ns       | 722.84 ns    | Faster by ~25%      |
-| 10000      | 10.090 μs       | 8.1039 μs    | Faster by ~20%      |
+| 10000      | 10.090 μs       | 8.007 μs     | Faster by ~20%      |
 
 
 Key observations:

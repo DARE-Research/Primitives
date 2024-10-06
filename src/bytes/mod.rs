@@ -10,7 +10,6 @@ pub mod serde;
 
 
 #[cfg(target_arch = "aarch64")]
-
 #[cfg(target_arch = "x86_64")]
 use core::arch::x86_64::*;
 
@@ -70,37 +69,39 @@ impl Bytes {
         }
     }
 
-    #[cfg(target_arch = "x86_64")]
-    #[target_feature(enable = "avx2")]
-    pub unsafe fn to_hex_x86_64(&self, result: &mut String, uppercase: bool) {
-        use core::arch::x86_64::*;
+    // XB6 not supported yet
+    // #[cfg(target_arch = "x86_64")]
+    // #[target_feature(enable = "avx2")]
+    // pub unsafe fn to_hex_x86_64(&self, result: &mut String, uppercase: bool) {
+    //     use core::arch::x86_64::*;
 
-        let lut_lower = _mm256_setr_epi8(
-            b'0', b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9', b'a', b'b', b'c', b'd', b'e', b'f',
-            b'0', b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9', b'a', b'b', b'c', b'd', b'e', b'f',
-        );
-        let lut_upper = _mm256_setr_epi8(
-            b'0', b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9', b'A', b'B', b'C', b'D', b'E', b'F',
-            b'0', b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9', b'A', b'B', b'C', b'D', b'E', b'F',
-        );
-        let lut = if uppercase { lut_upper } else { lut_lower };
+    //     let lut_lower = _mm256_setr_epi8(
+    //         b'0', b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9', b'a', b'b', b'c', b'd', b'e', b'f',
+    //         b'0', b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9', b'a', b'b', b'c', b'd', b'e', b'f',
+    //     );
+    //     let lut_upper = _mm256_setr_epi8(
+    //         b'0', b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9', b'A', b'B', b'C', b'D', b'E', b'F',
+    //         b'0', b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9', b'A', b'B', b'C', b'D', b'E', b'F',
+    //     );
+    //     let lut = if uppercase { lut_upper } else { lut_lower };
 
-        for chunk in self.inner.chunks(16) {
-            let input = _mm256_loadu_si256(chunk.as_ptr() as *const __m256i);
-            let hi = _mm256_and_si256(_mm256_srli_epi32(input, 4), _mm256_set1_epi8(0x0f));
-            let lo = _mm256_and_si256(input, _mm256_set1_epi8(0x0f));
+    //     for chunk in self.inner.chunks(16) {
+    //         let input = _mm256_loadu_si256(chunk.as_ptr() as *const __m256i);
+    //         let hi = _mm256_and_si256(_mm256_srli_epi32(input, 4), _mm256_set1_epi8(0x0f));
+    //         let lo = _mm256_and_si256(input, _mm256_set1_epi8(0x0f));
 
-            let hi_hex = _mm256_shuffle_epi8(lut, hi);
-            let lo_hex = _mm256_shuffle_epi8(lut, lo);
+    //         let hi_hex = _mm256_shuffle_epi8(lut, hi);
+    //         let lo_hex = _mm256_shuffle_epi8(lut, lo);
 
-            let hex = _mm256_unpacklo_epi8(hi_hex, lo_hex);
-            let hex_chars = core::slice::from_raw_parts(hex.as_ptr() as *const u8, 32);
+    //         let hex = _mm256_unpacklo_epi8(hi_hex, lo_hex);
+    //         let hex_chars = core::slice::from_raw_parts(hex.as_ptr() as *const u8, 32);
 
-            result.push_str(core::str::from_utf8_unchecked(&hex_chars[..chunk.len() * 2]));
-        }
-    }
+    //         result.push_str(core::str::from_utf8_unchecked(&hex_chars[..chunk.len() * 2]));
+    //     }
+    // }
 
 
+    
     #[cfg(target_arch = "aarch64")]
     #[target_feature(enable = "neon")]
     pub unsafe fn to_hex_aarch64(&self, result: &mut String, uppercase: bool) {
