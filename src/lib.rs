@@ -5,3 +5,4 @@ pub mod aliases;
 pub mod bits;
 pub mod bytes;
 pub mod signature;
+pub mod signed;

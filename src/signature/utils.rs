@@ -22,7 +22,7 @@ pub const fn to_eip155_v(v: u8, chain_id: u64) -> u64 {
 #[inline]
 pub(crate) const fn normalize_v(v: u64) -> k256::ecdsa::RecoveryId {
     let byte = normalize_v_to_byte(v);
-    debug_assert!(byte <= k256::ecdsa::RecoveryId::MAX);
+    assert!(byte <= k256::ecdsa::RecoveryId::MAX);
     match k256::ecdsa::RecoveryId::from_byte(byte) {
         Some(recid) => recid,
         None => unsafe { core::hint::unreachable_unchecked() },
@@ -32,9 +32,9 @@ pub(crate) const fn normalize_v(v: u64) -> k256::ecdsa::RecoveryId {
 #[inline]
 pub const fn normalize_v_to_byte(v: u64) -> u8 {
     match v {
-        0..=26 => (v % 4) as u8,
-        27..=34 => ((v - 27) % 4) as u8,
-        35.. => ((v - 1) % 2) as u8,
+        0..=26 => (v & 3) as u8,
+        27..=34 => ((v - 27) & 3) as u8,
+        35.. => ((v - 1) & 1) as u8,
     }
 }
 
