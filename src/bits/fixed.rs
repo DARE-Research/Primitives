@@ -423,21 +423,6 @@ mod tests {
     use super::*;
     use std::time::Instant;
 
-    macro_rules! fixed_bytes {
-        ($hex:literal, $N:expr) => {
-            FixedBytes::<$N>::from_slice(&hex::decode($hex).unwrap())
-        };
-    }
-
-    macro_rules! test_fmt {
-        ($($fmt:literal, $hex:literal, $N:expr => $expected:literal;)+) => {$(
-            assert_eq!(
-                format!($fmt, fixed_bytes!($hex, $N)),
-                $expected
-            );
-        )+};
-    }
-
     #[test]
     fn concat_const() {
         let time = Instant::now();
