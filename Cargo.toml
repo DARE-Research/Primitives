@@ -1,3 +1,4 @@
+
 [package]
 name = "primitives"
 version = "0.1.0"
@@ -7,7 +8,7 @@ edition = "2021"
 alloy-rlp = "0.3.8"
 bincode = "1.3.3"
 bytes = "1.7.2"
-const-hex = "1.13.1"
+const-hex = "1.12.0"
 criterion = {version = "0.5.1", features = ["html_reports"]}
 derive_more = {version = "1.0.0", features = ["full"]}
 hex = {  version = "0.4", default-features = false, features = [
@@ -24,6 +25,10 @@ serde_json = "1.0.128"
 [features]
 arbitrary = []
 allocative = []
+k256 = []
+rlp = []
+std = []
+serde = []
 
 [[bench]]
 name = "primitives"
@@ -32,3 +37,8 @@ harness = false
 
 [profile.bench]
 debug = true
+
+[lints.rust]
+unused_imports = "allow"
+unknown_lints = "allow"
+

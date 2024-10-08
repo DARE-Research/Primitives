@@ -152,7 +152,7 @@ impl Address {
 
         for (i, ch) in buf[2..].iter_mut().enumerate() {
             let hash_byte = hash[i >> 1];
-            let hash_bit = (hash_byte >> (4 * (1 - (i % 2)))) & 0xf;
+            let hash_bit = (hash_byte >> (4 * (1 - (i & 1)))) & 0xf;
             if *ch > b'9' && hash_bit >= 8 {
                 *ch = ch.to_ascii_uppercase();
             }
