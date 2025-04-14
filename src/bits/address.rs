@@ -1,16 +1,42 @@
 use core::arch::aarch64::*;
 use core::{fmt, mem::MaybeUninit, str, str::FromStr};
-use hex::{self, FromHex};
 use keccak_asm::{Digest, Keccak256};
 use rand::Rng;
 
+pub fn val(c: u8) -> u8 {
+    match c {
+        b'A'..=b'F' => c - b'A' + 10,
+        b'a'..=b'f' => c - b'a' + 10,
+        b'0'..=b'9' => c - b'0',
+        _ => panic!("invalid length"),
+    }
+}
+
+pub fn from_hex<T: AsRef<[u8]>>(hex: T) -> Result<Address, ()> {
+    let hex = hex.as_ref();
+    let mut bytes = [0u8; 20];
+
+    //why unchecked: called with a context expected length of 40
+    //why unsafe: we are sure that the length is 40
+    //Please don't be a retard and call this outside the context(this has no effect on perf but who cares )
+    unsafe {
+        for i in 0..20 {
+            let i_i = (i as i32).unchecked_mul(2) as usize;
+            let hi = val(*hex.get_unchecked(i_i));
+            let lo = val(*hex.get_unchecked(i_i + 1));
+            bytes[i] = hi << 4 | lo;
+        }
+    }
+
+    Ok(Address(bytes))
+}
 
 #[derive(Clone)]
 pub struct AddressChecksumBuffer(MaybeUninit<[u8; 42]>);
 const HEX_CHARS: &[u8; 16] = b"0123456789abcdef";
 
 impl AddressChecksumBuffer {
-    /// Creates a new uninitialized buffer. 
+    /// Creates a new uninitialized buffer.
     ///
     /// # Safety
     ///
@@ -66,7 +92,7 @@ pub enum AddressError {
     InvalidChecksum,
 }
 
-#[repr(transparent)]
+#[repr(align(8))]
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub struct Address([u8; 20]);
 
@@ -74,13 +100,13 @@ impl FromStr for Address {
     type Err = AddressError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.len() != 42 {
+        let s = s.strip_prefix("0x").unwrap_or(s);
+        if s.len() != 40 {
             return Err(AddressError::InvalidLength);
         }
-        let s = s.strip_prefix("0x").unwrap_or(s);
-        let bytes = s.as_bytes();
-
-        Ok(Address(bytes.try_into().unwrap()))
+        // let bytes = Vec::from_hex(s).map_err(AddressError::Hex)?;
+        let address = from_hex(s).unwrap();
+        Ok(address)
     }
 }
 
@@ -91,18 +117,11 @@ impl From<hex::FromHexError> for AddressError {
 }
 
 impl Address {
-
-    // Creates a new Address from a byte array
-    #[inline(always)]
-    pub fn new(bytes: [u8; 20]) -> Self {
-        Address(bytes)
-    }
-
     pub fn parse_checksummed(s: &str, chain_id: Option<u64>) -> Result<Self, AddressError> {
         let address = Self::from_str(s)?;
 
         let calculated_checksum = address.to_checksum(chain_id);
-    
+
         if s.eq_ignore_ascii_case(&calculated_checksum) {
             Ok(address)
         } else {
@@ -122,12 +141,12 @@ impl Address {
             use std::arch::is_aarch64_feature_detected;
             if is_aarch64_feature_detected!("neon") {
                 unsafe {
-                  self.to_checksum_inner_simd( buf.0.assume_init_mut(), chain_id);
+                    self.to_checksum_inner_simd(buf.0.assume_init_mut(), chain_id);
                 }
                 return buf;
             }
         }
-        self.to_checksum_inner(unsafe{ buf.0.assume_init_mut() }, chain_id);
+        self.to_checksum_inner(unsafe { buf.0.assume_init_mut() }, chain_id);
         buf
     }
 
@@ -217,7 +236,27 @@ impl Address {
         }
     }
 
-    pub fn random() -> Self{
+    fn val(c: u8) -> u8 {
+        match c {
+            b'A'..=b'F' => c - b'A' + 10,
+            b'a'..=b'f' => c - b'a' + 10,
+            b'0'..=b'9' => c - b'0',
+            _ => panic!("invalid length"),
+        }
+    }
+
+    fn from_hex<T: AsRef<[u8]>>(hex: T) -> Result<Self, ()> {
+        let hex = hex.as_ref();
+        let mut bytes = [0u8; 20];
+
+        for (i, pair) in hex.chunks(2).enumerate() {
+            bytes[i] = Self::val(pair[0]) << 4 | Self::val(pair[1]);
+        }
+
+        Ok(Address(bytes))
+    }
+
+    pub fn random() -> Self {
         let mut rng = rand::thread_rng();
         let mut bytes = [0u8; 20];
         rng.fill(&mut bytes);
@@ -242,14 +281,6 @@ mod tests {
             expected
         );
     }
-
-    #[test]
-    fn parses() {
-        let expected: u32 = 0xFFFFFFFF;
-        println!("{:?}", !expected);
-        
-    }
-
 
     // https://eips.ethereum.org/EIPS/eip-55
     #[test]

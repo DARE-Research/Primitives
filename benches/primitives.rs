@@ -33,16 +33,16 @@ fn primitives(c: &mut Criterion) {
         })
     });
 
-    g.bench_function("address_/new", |b: &mut criterion::Bencher<'_>| {
-        let mut rng = rand::thread_rng();
-        let mut bytes = [0u8; 20];
-        rng.fill(&mut bytes);
+    // g.bench_function("address_/new", |b: &mut criterion::Bencher<'_>| {
+    //     let mut rng = rand::thread_rng();
+    //     let mut bytes = [0u8; 20];
+    //     rng.fill(&mut bytes);
 
-        b.iter(|| {
-            let x = Address::new(bytes);
-            black_box(x);
-        })
-    });
+    //     b.iter(|| {
+    //         let x = Address::new(bytes);
+    //         black_box(x);
+    //     })
+    // });
     for size in [32, 64, 128, 256].iter() {
         g.bench_with_input(BenchmarkId::new("bytes", size), size, |b, &size| {
             let bytes = Bytes::from(vec![0xAA; size]);
