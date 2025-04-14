@@ -236,6 +236,15 @@ impl Address {
         }
     }
 
+    #[cfg(feature = "rand")]
+    pub fn random() -> Self {
+        let mut rng = rand::thread_rng();
+        let mut bytes = [0u8; 20];
+        rng.fill(&mut bytes);
+        Address(bytes)
+    }
+
+    #[cfg(not(feature = "rand"))]
     pub fn random() -> Self {
         let mut rng = rand::thread_rng();
         let mut bytes = [0u8; 20];

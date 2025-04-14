@@ -30,6 +30,7 @@ k256 = []
 rlp = []
 std = []
 serde = []
+rand = []
 
 [[bench]]
 name = "primitives"
