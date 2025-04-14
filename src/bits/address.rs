@@ -3,7 +3,7 @@ use core::{fmt, mem::MaybeUninit, str, str::FromStr};
 use keccak_asm::{Digest, Keccak256};
 use rand::Rng;
 
-pub fn val(c: u8) -> u8 {
+fn val(c: u8) -> u8 {
     match c {
         b'A'..=b'F' => c - b'A' + 10,
         b'a'..=b'f' => c - b'a' + 10,
@@ -12,7 +12,7 @@ pub fn val(c: u8) -> u8 {
     }
 }
 
-pub fn from_hex<T: AsRef<[u8]>>(hex: T) -> Result<Address, ()> {
+fn from_hex<T: AsRef<[u8]>>(hex: T) -> Result<Address, ()> {
     let hex = hex.as_ref();
     let mut bytes = [0u8; 20];
 
@@ -234,26 +234,6 @@ impl Address {
                 }
             }
         }
-    }
-
-    fn val(c: u8) -> u8 {
-        match c {
-            b'A'..=b'F' => c - b'A' + 10,
-            b'a'..=b'f' => c - b'a' + 10,
-            b'0'..=b'9' => c - b'0',
-            _ => panic!("invalid length"),
-        }
-    }
-
-    fn from_hex<T: AsRef<[u8]>>(hex: T) -> Result<Self, ()> {
-        let hex = hex.as_ref();
-        let mut bytes = [0u8; 20];
-
-        for (i, pair) in hex.chunks(2).enumerate() {
-            bytes[i] = Self::val(pair[0]) << 4 | Self::val(pair[1]);
-        }
-
-        Ok(Address(bytes))
     }
 
     pub fn random() -> Self {
