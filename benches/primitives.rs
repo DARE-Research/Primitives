@@ -7,8 +7,10 @@
 )]
 
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
-use primitives::{bits::address::Address, bits::fixed::FixedBytes, bytes::Bytes, signature::parity::Parity};
+use primitives::{bits::{address::{self, Address}, fixed::FixedBytes}, bytes::Bytes, signature::parity::Parity};
 use std::hint::black_box;
+use alloy_primitives::Address as AlloyAddress;
+use rand::Rng;
 
 fn primitives(c: &mut Criterion) {
     let mut g = c.benchmark_group("primitives");
@@ -20,6 +22,27 @@ fn primitives(c: &mut Criterion) {
             black_box(x);
         })
     });
+    g.bench_function("address_alloy/new", |b: &mut criterion::Bencher<'_>| {
+        let mut rng = rand::thread_rng();
+        let mut bytes = [0u8; 20];
+        rng.fill(&mut bytes);
+       
+        b.iter(|| {
+            let x = AlloyAddress::new(bytes);
+            black_box(x);
+        })
+    });
+
+    // g.bench_function("address_/new", |b: &mut criterion::Bencher<'_>| {
+    //     let mut rng = rand::thread_rng();
+    //     let mut bytes = [0u8; 20];
+    //     rng.fill(&mut bytes);
+
+    //     b.iter(|| {
+    //         let x = Address::new(bytes);
+    //         black_box(x);
+    //     })
+    // });
     for size in [32, 64, 128, 256].iter() {
         g.bench_with_input(BenchmarkId::new("bytes", size), size, |b, &size| {
             let bytes = Bytes::from(vec![0xAA; size]);
