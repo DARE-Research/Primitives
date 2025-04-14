@@ -5,7 +5,7 @@ don't tell anyone but this is just an excuse for me to learn simd stuff(idk what
 
 ## What's This All About?
 
-This project is a wild ride into the world of primitive optimization. We're throwing ideas at the wall and seeing what sticks. Our main weapon of choice? SIMD (Single Instruction, Multiple Data) - because why not make things go zoom?
+This project is a wild ride into the world of primitive optimization. We're throwing ideas at the wall and seeing what sticks.
 
 ## Design Choice
 
@@ -66,12 +66,5 @@ Know what you're doing? Even better, we could use the help!
 
 ## License
 
-Probably something open source. We'll figure it out.
+MIT
 
-## Acknowledgements
-
-This project is inspired by the Alloy primitives developed by the Paradigm team. We aim to build upon their work to further optimize Ethereum's core functionality.
-
-(They seem to know what they're doing, unlike us)
-
-By the DARE research team, you've never heard of it I know but give it a year... nahhh I mean two years.
