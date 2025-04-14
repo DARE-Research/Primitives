@@ -10,7 +10,7 @@ pub struct AddressChecksumBuffer(MaybeUninit<[u8; 42]>);
 const HEX_CHARS: &[u8; 16] = b"0123456789abcdef";
 
 impl AddressChecksumBuffer {
-    /// Creates a new uninitialized buffer.
+    /// Creates a new uninitialized buffer. 
     ///
     /// # Safety
     ///
@@ -66,7 +66,7 @@ pub enum AddressError {
     InvalidChecksum,
 }
 
-#[repr(align(8))]
+#[repr(transparent)]
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub struct Address([u8; 20]);
 
@@ -74,15 +74,11 @@ impl FromStr for Address {
     type Err = AddressError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.len() != 42 {
+            return Err(AddressError::InvalidLength);
+        }
         let s = s.strip_prefix("0x").unwrap_or(s);
-        if s.len() != 40 {
-            return Err(AddressError::InvalidLength);
-        }
-
-        let bytes = Vec::from_hex(s).map_err(AddressError::Hex)?;
-        if bytes.len() != 20 {
-            return Err(AddressError::InvalidLength);
-        }
+        let bytes = s.as_bytes();
 
         Ok(Address(bytes.try_into().unwrap()))
     }
@@ -95,6 +91,13 @@ impl From<hex::FromHexError> for AddressError {
 }
 
 impl Address {
+
+    // Creates a new Address from a byte array
+    #[inline(always)]
+    pub fn new(bytes: [u8; 20]) -> Self {
+        Address(bytes)
+    }
+
     pub fn parse_checksummed(s: &str, chain_id: Option<u64>) -> Result<Self, AddressError> {
         let address = Self::from_str(s)?;
 
@@ -239,6 +242,14 @@ mod tests {
             expected
         );
     }
+
+    #[test]
+    fn parses() {
+        let expected: u32 = 0xFFFFFFFF;
+        println!("{:?}", !expected);
+        
+    }
+
 
     // https://eips.ethereum.org/EIPS/eip-55
     #[test]
